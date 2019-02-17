@@ -358,6 +358,7 @@ RosKmdRapAdapter::ProcessRenderBuffer(
                     ((BYTE *)RosKmdGlobal::s_pVideoMemory) + pGpuCommand->m_resourceCopy.m_dstGpuAddress.QuadPart,
                     ((BYTE *)RosKmdGlobal::s_pVideoMemory) + pGpuCommand->m_resourceCopy.m_srcGpuAddress.QuadPart,
                     pGpuCommand->m_resourceCopy.m_sizeBytes);
+				KeInvalidateRangeAllCaches(((BYTE *)RosKmdGlobal::s_pVideoMemory) + pGpuCommand->m_resourceCopy.m_dstGpuAddress.QuadPart, (ULONG)pGpuCommand->m_resourceCopy.m_sizeBytes);
             }
             break;
             default:
@@ -442,8 +443,8 @@ RosKmdRapAdapter::ProcessRenderBuffer(
 
             // TODO[indyz]: Decide the best way to handle the cache
             //
-            KeInvalidateAllCaches();
-
+            //KeInvalidateAllCaches();
+			KeInvalidateRangeAllCaches((PVOID)pDmaBufInfo->m_DmaBufferPhysicalAddress.LowPart, m_busAddressOffset);
             //
             // Flush the VC4 GPU caches
             //
