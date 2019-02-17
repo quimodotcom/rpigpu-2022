@@ -4,6 +4,7 @@
 #include "RosUmdUtil.h"
 #include "Pixel.hpp"
 #include "RosUmdDebug.h"
+#include "Vc4Hw.h"
 
 class RosUmdResource : public RosAllocationExchange
 {
@@ -34,6 +35,9 @@ public:
 
     // Used by constant buffer
     BYTE                   *m_pSysMemCopy;
+
+    // Tiled textures information
+    VC4TileInfo m_TileInfo;
 
     void
     Standup(
@@ -107,6 +111,7 @@ public:
         return m_sampleDesc.Count > 1;
     }
 
+
     UINT Pitch () const
     {
         // Pitch is only valid for linear layouts
@@ -153,6 +158,10 @@ public:
     void ConvertBitmapTo4kTileBlocks(
         BYTE *InputBuffer,
         BYTE *OutBuffer,
+    // Support for various texture formats
+    void ConvertInitialTextureFormatToInternal(
+        const BYTE *pSrc,
+        BYTE *pDst,
         UINT rowStride);
 
     static void CopyTFormatToLinear (
@@ -165,6 +174,20 @@ public:
         );
 
 private:
+
+    void  ConvertBufferto32Bpp(
+        const BYTE *pSrc,
+        BYTE *pDst,
+        UINT srcBpp,
+        UINT swizzleMask,
+        UINT pSrcStride,
+        UINT pDstStride);
+
+    // Tiled textures support
+    void ConvertBitmapTo4kTileBlocks(
+        const BYTE *InputBuffer,
+        BYTE *OutBuffer,
+        UINT rowStride);
 
     // Tiled textures support
     BYTE *Form1kSubTileBlock(
@@ -189,6 +212,17 @@ private:
         UINT BindFlags,
         DXGI_FORMAT Format
         );
+
+    static void MapDxgiFormatToInternalFormats(
+        DXGI_FORMAT format,
+        _Out_ UINT &bpp,
+        _Out_ RosHwFormat &rosFormat);
+
+    void CalculateTilesInfo();
+
+    static VC4TileInfo FillTileInfo(UINT bpp);
+
+
 };
 
 inline RosUmdResource* RosUmdResource::CastFrom(D3D10DDI_HRESOURCE hResource)
