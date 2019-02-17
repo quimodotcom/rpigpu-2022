@@ -37,7 +37,6 @@ RenderOnlySample.UserMode = 11 ; system32
 ExcludeFromSelect=*
 
 [RenderOnlySample.Mfg.NT$ARCH$]
-%RenderOnlySample% = RenderOnlySample,ACPI\RENDERONLYSAMPLE
 %RenderOnlySample% = RenderOnlySample,ACPI\BCM2850
 
 [RenderOnlySample]
@@ -90,6 +89,6 @@ REG_DWORD     = 0x00010001
 ; Localizable Strings
 ;
 
-RenderOnlySample="Render Only Sample Driver"
-RenderOnlySampleDisk = "Render Only Sample Disk"
-ManufacturerName="BartHouse"
+RenderOnlySample="Broadcom VideoCore IV (EXPERIMENTAL)"
+RenderOnlySampleDisk = "VC4 Driver Disk"
+ManufacturerName="Microsoft"
