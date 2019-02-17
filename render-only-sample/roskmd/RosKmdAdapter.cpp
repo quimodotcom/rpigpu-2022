@@ -1918,8 +1918,11 @@ NTSTATUS RosKmAdapter::GetStandardAllocationDriverData (
         allocParams->m_hwWidthPixels = surfData->Width;
         allocParams->m_hwHeightPixels = surfData->Height;
 
-        NT_ASSERT(surfData->Format == D3DDDIFMT_A8R8G8B8);
-        allocParams->m_hwSizeBytes = surfData->Width * 4 * surfData->Height;
+		allocParams->m_hwFormat = RosHwFormat::X8888;
+		allocParams->m_hwPitchBytes = surfData->Width * 4;
+		allocParams->m_hwSizeBytes = allocParams->m_hwPitchBytes * surfData->Height;
+		allocParams->m_hwFormat = RosHwFormat::X8888;
+        //allocParams->m_hwSizeBytes = surfData->Width * 4 * surfData->Height;
 
         return STATUS_SUCCESS;
     }
@@ -1964,9 +1967,10 @@ NTSTATUS RosKmAdapter::GetStandardAllocationDriverData (
         allocParams->m_hwLayout = RosHwLayout::Linear;
         allocParams->m_hwWidthPixels = surfData->Width;
         allocParams->m_hwHeightPixels = surfData->Height;
-
-        NT_ASSERT(surfData->Format == D3DDDIFMT_A8R8G8B8);
-        allocParams->m_hwSizeBytes = surfData->Width * 4 * surfData->Height;
+		allocParams->m_hwFormat = RosHwFormat::X8888;
+		allocParams->m_hwPitchBytes = surfData->Width * 4;
+		allocParams->m_hwSizeBytes = allocParams->m_hwPitchBytes * surfData->Height;
+        //allocParams->m_hwSizeBytes = surfData->Width * 4 * surfData->Height;
 
         Args->pCreateShadowSurfaceData->Pitch = surfData->Width * 4; //allocParams->m_hwPitchBytes;
         return STATUS_SUCCESS;
