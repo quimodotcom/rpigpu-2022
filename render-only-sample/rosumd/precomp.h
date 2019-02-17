@@ -10,6 +10,7 @@
 #include <exception>
 #include <typeinfo>
 #include <new>
+#include <memory>
 
 #include <stdio.h>
 #include <math.h>

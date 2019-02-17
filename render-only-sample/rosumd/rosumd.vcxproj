@@ -146,6 +146,7 @@
     <ClCompile Include="RosUmdLogging.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ntassert.h" />
     <ClInclude Include="precomp.h" />
     <ClInclude Include="..\roscommon\RosAdapter.h" />
     <ClInclude Include="..\roscommon\RosAllocation.h" />
