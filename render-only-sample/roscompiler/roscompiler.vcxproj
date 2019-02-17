@@ -98,7 +98,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ntassert.h" />
     <ClInclude Include="precomp.h" />
     <ClInclude Include="..\roscommon\Vc4Qpu.h" />
     <ClInclude Include="d3dumddi_.h" />

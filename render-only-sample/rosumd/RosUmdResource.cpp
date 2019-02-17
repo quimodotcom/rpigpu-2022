@@ -18,6 +18,8 @@
 
 #include "Vc4Hw.h"
 
+#include <memory>
+
 RosUmdResource::RosUmdResource() :
     m_signature(_SIGNATURE::CONSTRUCTED),
     m_hKMAllocation(NULL)
@@ -40,7 +42,7 @@ RosUmdResource::Standup(
     D3D10DDI_HRTRESOURCE hRTResource)
 {
     UNREFERENCED_PARAMETER(pUmdDevice);
-
+    
     assert(m_signature == _SIGNATURE::CONSTRUCTED);
 
     m_resourceDimension = pCreateResource->ResourceDimension;
@@ -60,7 +62,7 @@ RosUmdResource::Standup(
             (pCreateResource->MiscFlags & D3DWDDM2_0DDI_RESOURCE_MISC_DISPLAYABLE_SURFACE) &&
             (pCreateResource->BindFlags & D3D10_DDI_BIND_PRESENT) &&
             (pCreateResource->pPrimaryDesc->ModeDesc.Width != 0));
-
+        
         m_isPrimary = true;
         m_primaryDesc = *pCreateResource->pPrimaryDesc;
     }
@@ -98,10 +100,11 @@ void RosUmdResource::InitSharedResourceFromExistingAllocation (
     )
 {
     assert(m_signature == _SIGNATURE::CONSTRUCTED);
-
+    
     ROS_LOG_TRACE(
         "Opening existing resource. "
         "(ExistingAllocationPtr->m_hwWidth/HeightPixels = %u,%u  "
+        "ExistingAllocationPtr->m_hwPitchBytes = %u, "
         "ExistingAllocationPtr->m_hwSizeBytes = %u, "
         "ExistingAllocationPtr->m_isPrimary = %d, "
         "hRTResource = 0x%p, "
@@ -109,25 +112,28 @@ void RosUmdResource::InitSharedResourceFromExistingAllocation (
         "hKMAllocation = 0x%x)",
         ExistingAllocationPtr->m_hwWidthPixels,
         ExistingAllocationPtr->m_hwHeightPixels,
+        ExistingAllocationPtr->m_hwPitchBytes,
         ExistingAllocationPtr->m_hwSizeBytes,
         ExistingAllocationPtr->m_isPrimary,
         hRTResource.handle,
         hKMResource.handle,
         hKMAllocation);
-
+    
     // copy members from the existing allocation into this object
     RosAllocationExchange* basePtr = this;
     *basePtr = *ExistingAllocationPtr;
 
     // HW specific information calculated based on the fields above
     CalculateMemoryLayout();
-
+    
     NT_ASSERT(
         (m_hwLayout == ExistingAllocationPtr->m_hwLayout) &&
         (m_hwWidthPixels == ExistingAllocationPtr->m_hwWidthPixels) &&
         (m_hwHeightPixels == ExistingAllocationPtr->m_hwHeightPixels) &&
+        (m_hwFormat == ExistingAllocationPtr->m_hwFormat) &&
+        (m_hwPitchBytes == ExistingAllocationPtr->m_hwPitchBytes) &&
         (m_hwSizeBytes == ExistingAllocationPtr->m_hwSizeBytes));
-
+    
     m_hRTResource = hRTResource;
     m_hKMResource = hKMResource.handle;
     m_hKMAllocation = hKMAllocation;
@@ -137,7 +143,7 @@ void RosUmdResource::InitSharedResourceFromExistingAllocation (
 
     m_pData = nullptr;
     m_pSysMemCopy = nullptr;
-
+    
     m_signature = _SIGNATURE::INITIALIZED;
 }
 
@@ -216,7 +222,7 @@ RosUmdResource::Map(
     {
         pMappedSubRes->pData = m_pSysMemCopy;
 
-        pMappedSubRes->RowPitch = this->Pitch();
+        pMappedSubRes->RowPitch = m_hwPitchBytes;
         pMappedSubRes->DepthPitch = (UINT)m_hwSizeBytes;
 
         return;
@@ -263,7 +269,7 @@ RosUmdResource::Map(
     pMappedSubRes->pData = lock.pData;
     m_pData = (BYTE*)lock.pData;
 
-    pMappedSubRes->RowPitch = this->Pitch();
+    pMappedSubRes->RowPitch = m_hwPitchBytes;
     pMappedSubRes->DepthPitch = (UINT)m_hwSizeBytes;
 }
 
@@ -463,11 +469,14 @@ RosUmdResource::CalculateMemoryLayout(
             m_hwLayout = RosHwLayout::Linear;
 
             // TODO(bhouse) Need mapping code from resource DXGI format to hw format
+            m_hwFormat = RosHwFormat::X8;
+
             m_hwWidthPixels = m_mip0Info.TexelWidth;
             m_hwHeightPixels = m_mip0Info.TexelHeight;
 
-            m_hwSizeBytes = m_mip0Info.TexelWidth * CPixel::BytesPerPixel(m_format);
-            NT_ASSERT(this->Pitch() == m_hwSizeBytes);
+            assert(m_hwFormat == RosHwFormat::X8);
+            assert(m_hwHeightPixels == 1);
+            m_hwPitchBytes = m_hwSizeBytes = m_hwWidthPixels;
         }
     break;
     case D3D10DDIRESOURCE_TEXTURE2D:
@@ -547,8 +556,10 @@ RosUmdResource::CalculateMemoryLayout(
     case D3D10DDIRESOURCE_TEXTURE1D:
     case D3D10DDIRESOURCE_TEXTURE3D:
     case D3D10DDIRESOURCE_TEXTURECUBE:
-    default:
-        throw RosUmdException(DXGI_DDI_ERR_UNSUPPORTED);
+        {
+            throw RosUmdException(DXGI_DDI_ERR_UNSUPPORTED);
+        }
+        break;
     }
 }
 
@@ -556,7 +567,7 @@ bool RosUmdResource::CanRotateFrom(const RosUmdResource* Other) const
 {
     // Make sure we're not rotating from ourself and that the resources
     // are compatible (e.g. size, flags, ...)
-
+    
     return (this != Other) &&
            (!m_pData && !Other->m_pData) &&
            (!m_pSysMemCopy && !Other->m_pSysMemCopy) &&
@@ -583,7 +594,13 @@ bool RosUmdResource::CanRotateFrom(const RosUmdResource* Other) const
            (m_hwLayout == Other->m_hwLayout) &&
            (m_hwWidthPixels == Other->m_hwWidthPixels) &&
            (m_hwHeightPixels == Other->m_hwHeightPixels) &&
-           (m_hwSizeBytes == Other->m_hwSizeBytes);
+           (m_hwFormat == Other->m_hwFormat) &&
+           (m_hwPitchBytes == Other->m_hwPitchBytes) &&
+           (m_hwSizeBytes == Other->m_hwSizeBytes) &&
+           (m_hwWidthTilePixels == Other->m_hwWidthTilePixels) &&
+           (m_hwHeightTilePixels == Other->m_hwHeightTilePixels) &&
+           (m_hwWidthTiles == Other->m_hwWidthTiles) &&
+           (m_hwHeightTiles == Other->m_hwHeightTiles);
 }
 
 
@@ -710,9 +727,8 @@ void RosUmdResource::ConvertInitialTextureFormatToInternal(const BYTE *pSrc, BYT
 }
 
 // Form 1k sub-tile block
-
-BYTE *RosUmdResource::Form1kSubTileBlock(BYTE *pInputBuffer, BYTE *pOutBuffer, UINT rowStride)
-{
+BYTE *RosUmdResource::Form1kSubTileBlock(const BYTE *pInputBuffer, BYTE *pOutBuffer, UINT rowStride)
+{    
     // 1k sub-tile block is formed from micro-tiles blocks
     for (UINT h = 0; h < m_TileInfo.VC4_1kBSubTileHeightPixels; h += m_TileInfo.vC4_MicroTileHeight)
     {
@@ -748,9 +764,9 @@ BYTE *RosUmdResource::Form4kTileBlock(const BYTE *pInputBuffer, BYTE *pOutBuffer
         // For even rows, process sub-tile blocks in ABCD order, where
         // each sub-tile is stored in memory as follows:
         //
-        //  [C  B]
+        //  [C  B]   
         //  [D  A]
-        //
+        //                  
 
         // Get A block
         currentTileOffset = pInputBuffer + rowStride * subTileHeightPixels + subTileWidthBytes;
@@ -776,9 +792,9 @@ BYTE *RosUmdResource::Form4kTileBlock(const BYTE *pInputBuffer, BYTE *pOutBuffer
     {
         // For even rows, process sub-tile blocks in ABCD order, where
         // each sub-tile is stored in memory as follows:
-        //
-        //  [A  D]
-        //  [B  C]
+        // 
+        //  [A  D]    
+        //  [B  C] 
         //
 
         // Get A block
@@ -804,13 +820,8 @@ BYTE *RosUmdResource::Form4kTileBlock(const BYTE *pInputBuffer, BYTE *pOutBuffer
 // Form (CountX * CountY) tile blocks from InputBuffer and store them in OutBuffer
 void RosUmdResource::ConvertBitmapTo4kTileBlocks(const BYTE *InputBuffer, BYTE *OutBuffer, UINT rowStride)
 {
-    // [todo] Currently only 32bpp mode is supported
-    //UINT CountX = this->WidthInTiles();
-    //UINT CountY = this->HeightInTiles();
-
     UINT CountX = m_hwWidthTiles;
     UINT CountY = m_hwHeightTiles;
-
 
     for (UINT k = 0; k < CountY; k++)
     {
@@ -834,131 +845,4 @@ void RosUmdResource::ConvertBitmapTo4kTileBlocks(const BYTE *InputBuffer, BYTE *
             }
         }
     }
-}
-
-// given an xy microtile
-
-_Use_decl_annotations_
-void RosUmdResource::CopyTFormatToLinear (
-    const void* Source,
-    UINT SourceWidthTiles,  // width in 4k tiles
-    UINT SourceHeightTiles, // height in 4k tiles
-    void* Dest,
-    UINT DestPitch,
-    UINT DestHeight
-    )
-{
-    if (DestPitch % VC4_MICRO_TILE_WIDTH_BYTES) {
-        ROS_LOG_ERROR(
-            "Destination pitch is not aligned to microtile width. "
-            "(DestPitch = %d, VC4_MICRO_TILE_WIDTH_BYTES = %d)",
-            DestPitch,
-            VC4_MICRO_TILE_WIDTH_BYTES);
-        throw RosUmdException(E_INVALIDARG);
-    }
-
-    const BYTE* const destEnd = static_cast<BYTE*>(Dest) + (DestPitch * DestHeight);
-    const BYTE* const srcEnd = static_cast<const BYTE*>(Source) +
-        (SourceWidthTiles * SourceHeightTiles * VC4_4KB_TILE_SIZE_BYTES);
-
-    // build destination image in scanline order
-    for (UINT y = 0; y < DestHeight; ++y) {
-        const UINT offsetWithinMicrotile =
-            (y % VC4_MICRO_TILE_HEIGHT) * VC4_MICRO_TILE_WIDTH_BYTES;
-
-        // destRow points to beginning of row y
-        BYTE* const destRow = static_cast<BYTE*>(Dest) + y * DestPitch;
-
-        for (UINT x = 0; x < DestPitch; x += VC4_MICRO_TILE_WIDTH_BYTES) {
-            TileCoord tileCoord(
-                x / VC4_MICRO_TILE_WIDTH_BYTES,
-                y / VC4_MICRO_TILE_HEIGHT,
-                SourceWidthTiles);
-
-            // Compute the start of the line within the micro tile
-            const BYTE* src =
-                static_cast<const BYTE*>(Source) +
-                tileCoord.ByteOffset() +
-                offsetWithinMicrotile;
-            NT_ASSERT((src + VC4_MICRO_TILE_WIDTH_BYTES) <= srcEnd);
-            UNREFERENCED_PARAMETER(srcEnd);
-
-            BYTE* dest = destRow + x;
-            NT_ASSERT((dest + VC4_MICRO_TILE_WIDTH_BYTES) <= destEnd);
-            UNREFERENCED_PARAMETER(destEnd);
-
-            memcpy(dest, src, VC4_MICRO_TILE_WIDTH_BYTES);
-        }
-    }
-}
-
-RosUmdResource::_LayoutRequirements RosUmdResource::Get2dTextureLayoutRequirements (
-    UINT BindFlags,
-    DXGI_FORMAT Format
-    )
-{
-    RosHwLayout hwLayout;
-    UINT pitchAlign, heightAlign;
-
-    switch (BindFlags)
-    {
-    case 0:
-        // non-bindable resources (e.g. staging resources) must be pitch-aligned
-        // to microtile width so that we can copy efficiently between T-format
-        // and linear resources
-        hwLayout = RosHwLayout::Linear;
-        pitchAlign = VC4_MICRO_TILE_WIDTH_BYTES;
-        heightAlign = 1;
-        break;
-
-    case D3D10_DDI_BIND_RENDER_TARGET:
-    case D3D10_DDI_BIND_RENDER_TARGET | D3D10_DDI_BIND_SHADER_RESOURCE:
-        // non-displayable render targets use T-Format, and must be aligned
-        // to the binning tile size
-        hwLayout = RosHwLayout::Tiled;
-        pitchAlign = VC4_BINNING_TILE_PIXELS * CPixel::BytesPerPixel(Format);
-        heightAlign = VC4_BINNING_TILE_PIXELS;
-        break;
-
-    //case D3D10_DDI_BIND_RENDER_TARGET:
-    case D3D10_DDI_BIND_RENDER_TARGET | D3D10_DDI_BIND_PRESENT:
-    case D3D10_DDI_BIND_RENDER_TARGET | D3D10_DDI_BIND_SHADER_RESOURCE | D3D10_DDI_BIND_PRESENT:
-        // displayable render target uses linear (raster) format, and must be
-        // aligned to binning tile size
-        hwLayout = RosHwLayout::Linear;
-        pitchAlign = VC4_BINNING_TILE_PIXELS * CPixel::BytesPerPixel(Format);
-        heightAlign = VC4_BINNING_TILE_PIXELS;
-        break;
-
-    case D3D10_DDI_BIND_SHADER_RESOURCE:
-    case D3D10_DDI_BIND_DEPTH_STENCIL:
-        // bindable textures and depth stencils use T-Format and must be
-        // aligned to the t-format tile size
-        // XXX: Disable tiled format until issue #48 is fixed.
-        hwLayout = RosHwLayout::Linear; // RosHwLayout::Tiled;
-        pitchAlign = VC4_4KB_TILE_WIDTH_BYTES;
-        heightAlign = VC4_4KB_TILE_HEIGHT;
-        break;
-
-    case D3D10_DDI_BIND_PRESENT:
-        // display-only surfaces use linear format with no alignment requirement
-        hwLayout = RosHwLayout::Linear;
-        pitchAlign = CPixel::BytesPerPixel(Format);
-        heightAlign = 1;
-        break;
-
-    case D3D10_DDI_BIND_VERTEX_BUFFER:
-    case D3D10_DDI_BIND_INDEX_BUFFER:
-    case D3D10_DDI_BIND_CONSTANT_BUFFER:
-        ROS_LOG_ERROR(
-            "Unsupported bind flag for 2D texture. (BindFlags = 0x%x)",
-            BindFlags);
-        throw RosUmdException(E_INVALIDARG);
-    case D3D10_DDI_BIND_STREAM_OUTPUT:
-    default:
-        ROS_LOG_ERROR("Unsupported or invalid bind flags: 0x%x", BindFlags);
-        throw RosUmdException(E_INVALIDARG);
-    }
-
-    return _LayoutRequirements{hwLayout, pitchAlign, heightAlign};
 }

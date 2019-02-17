@@ -6,6 +6,7 @@
 #include <d3d10umddi.h>
 
 #include <Vc4Hw.h>
+#include <ntassert.h>
 
 enum RosHwLayout
 {
@@ -42,9 +43,13 @@ struct RosAllocationExchange
     bool                    m_isPrimary;
     DXGI_DDI_PRIMARY_DESC   m_primaryDesc;
 
+    // HW specific information calculated based on the fields above
     RosHwLayout             m_hwLayout;
+
     UINT                    m_hwWidthPixels;
     UINT                    m_hwHeightPixels;
+    RosHwFormat             m_hwFormat;
+    UINT                    m_hwPitchBytes;
     UINT                    m_hwSizeBytes;
 };
 
