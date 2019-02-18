@@ -122,6 +122,16 @@
     <ClCompile Include="Vc4Emit.cpp" />
     <ClCompile Include="Vc4Shader.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <FilesToPackage Include="ARM64\Release\rosumdarm.dll" Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+      <PackageRelativeDirectory>
+      </PackageRelativeDirectory>
+    </FilesToPackage>
+    <FilesToPackage Include="ARM64\Release\rosumdx86.dll" Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+      <PackageRelativeDirectory>
+      </PackageRelativeDirectory>
+    </FilesToPackage>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

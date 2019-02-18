@@ -74,6 +74,16 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <FilesToPackage Include="C:\projects\rpigpu\render-only-sample\ARM64\Release\rosumdarm.dll" Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+      <PackageRelativeDirectory>
+      </PackageRelativeDirectory>
+    </FilesToPackage>
+    <FilesToPackage Include="C:\projects\rpigpu\render-only-sample\ARM64\Release\rosumdx86.dll" Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+      <PackageRelativeDirectory>
+      </PackageRelativeDirectory>
+    </FilesToPackage>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

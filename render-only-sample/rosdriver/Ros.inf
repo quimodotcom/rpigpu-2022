@@ -25,6 +25,8 @@ CatalogFile=roskmd.cat
 [SourceDisksFiles]
 roskmd.sys = 0
 rosumd.dll = 0
+rosumdx86.dll = 0
+rosumdarm.dll = 0
 
 [DestinationDirs]
 RenderOnlySample.Miniport = 12 ; drivers
