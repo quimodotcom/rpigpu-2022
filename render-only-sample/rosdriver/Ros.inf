@@ -29,6 +29,8 @@ rosumd.dll = 0
 [DestinationDirs]
 RenderOnlySample.Miniport = 12 ; drivers
 RenderOnlySample.UserMode = 11 ; system32
+RenderOnlySample.UserModeARM = 10, SysArm32
+RenderOnlySample.UserModeX86 = 10, SysWow64
 
 [Manufacturer]
 %ManufacturerName%=RenderOnlySample.Mfg,NT$ARCH$
@@ -41,7 +43,7 @@ ExcludeFromSelect=*
 
 [RenderOnlySample]
 FeatureScore=FB
-CopyFiles=RenderOnlySample.Miniport, RenderOnlySample.UserMode
+CopyFiles=RenderOnlySample.Miniport, RenderOnlySample.UserMode, RenderOnlySample.UserModeARM, RenderOnlySample.UserModeX86
 AddReg = RenderOnlySample_AddReg
 
 [RenderOnlySample.Miniport]
@@ -49,6 +51,12 @@ roskmd.sys,,,0x100
 
 [RenderOnlySample.UserMode]
 rosumd.dll,,,0x4000
+
+[RenderOnlySample.UserModeARM]
+rosumd.dll,rosumdarm.dll,,0x4000
+
+[RenderOnlySample.UserModeX86]
+rosumd.dll,rosumdx86.dll,,0x4000
 
 [RenderOnlySample_AddReg]
 HKR,,UserModeDriverName,%REG_MULTI_SZ%,rosumd.dll,rosumd.dll,rosumd.dll,rosumd.dll
@@ -91,4 +99,4 @@ REG_DWORD     = 0x00010001
 
 RenderOnlySample="Broadcom VideoCore IV (EXPERIMENTAL)"
 RenderOnlySampleDisk = "VC4 Driver Disk"
-ManufacturerName="Microsoft"
+ManufacturerName="MS-IOT"
