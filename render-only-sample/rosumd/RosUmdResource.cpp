@@ -514,11 +514,11 @@ RosUmdResource::CalculateMemoryLayout(
             // Disable tiled format until issue #48 is fixed.
             //
             // Force tiled layout for given configuration only
-            // if ((m_usage == D3D10_DDI_USAGE_DEFAULT) &&
-            //    (m_bindFlags == D3D10_DDI_BIND_SHADER_RESOURCE))
-            // {
-            //    m_hwLayout = RosHwLayout::Tiled;
-            // }
+            if ((m_usage == D3D10_DDI_USAGE_DEFAULT) &&
+               (m_bindFlags == D3D10_DDI_BIND_SHADER_RESOURCE))
+            {
+                m_hwLayout = RosHwLayout::Tiled;
+            }
 
             // Using system memory linear MipMap as example
             m_hwWidthPixels = m_mip0Info.TexelWidth;
