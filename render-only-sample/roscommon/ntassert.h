@@ -164,7 +164,7 @@ extern "C" {
 
 #if _MSC_VER >= 1300
 #if DBG
-
+#ifndef NT_ASSERT
 #define NT_ASSERT(_exp) \
     ((!(_exp)) ? \
         (__annotation(L"Debug", L"AssertFail", L#_exp), \
@@ -186,7 +186,7 @@ extern "C" {
 #define NT_VERIFY     NT_ASSERT
 #define NT_VERIFYMSG  NT_ASSERTMSG
 #define NT_VERIFYMSGW NT_ASSERTMSGW
-
+#endif
 #else // DBG
 
 #ifndef NT_ASSERT
