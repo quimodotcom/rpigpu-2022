@@ -1000,6 +1000,7 @@ RosKmAdapter::QueryAdapterInfo(
 
         pDriverCaps->PresentationCaps.SupportKernelModeCommandBuffer = FALSE;
         pDriverCaps->PresentationCaps.SupportSoftwareDeviceBitmaps = TRUE;
+		pDriverCaps->PresentationCaps.DriverSupportsCddDwmInterop = FALSE;
 
         //
         // Cap used for DWM off case, screen to screen blt is slow
@@ -1101,7 +1102,7 @@ RosKmAdapter::QueryAdapterInfo(
         // TODO[bhouse] WDDMVersion
         //              Documentation states that we should not set this value if WDDM 1.3
         //
-        pDriverCaps->WDDMVersion = m_WDDMVersion;
+        //pDriverCaps->WDDMVersion = m_WDDMVersion;
 
         //
         // TODO[bhouse] VirtualAddressCaps
