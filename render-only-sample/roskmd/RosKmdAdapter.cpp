@@ -1102,12 +1102,12 @@ RosKmAdapter::QueryAdapterInfo(
         // TODO[bhouse] WDDMVersion
         //              Documentation states that we should not set this value if WDDM 1.3
         //
-        //pDriverCaps->WDDMVersion = m_WDDMVersion;
+        pDriverCaps->WDDMVersion = m_WDDMVersion;
 
         //
         // TODO[bhouse] VirtualAddressCaps
         //
-
+		
         //
         // TODO[bhouse] DmaBufferCaps
         //
