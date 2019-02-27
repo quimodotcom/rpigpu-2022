@@ -2403,7 +2403,7 @@ void RosUmdDevice::ResourceCopyRegion11_1(
     //
     // TODO: come back to philosophy if these need to be checked in FREE builds
     //
-	return;
+
     assert(nullptr != pDestinationResource);
     assert(nullptr != pSourceResource);
 
