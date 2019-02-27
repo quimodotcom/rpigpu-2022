@@ -2403,7 +2403,7 @@ void RosUmdDevice::ResourceCopyRegion11_1(
     //
     // TODO: come back to philosophy if these need to be checked in FREE builds
     //
-	
+	return;
     assert(nullptr != pDestinationResource);
     assert(nullptr != pSourceResource);
 
@@ -2462,7 +2462,7 @@ void RosUmdDevice::ResourceCopyRegion11_1(
         //       ensure each source and destionation resource format in D3D11DDIARG_CREATERESOURCE.Format supports appropriate conversion
         //
 
-        //assert(false);
+        assert(false);
     }
 
     //
@@ -2546,7 +2546,7 @@ void RosUmdDevice::ResourceCopyRegion11_1(
         // TODO: implement the copy
         //
 
-        //assert(false);
+        assert(false);
     }
     else
     {
@@ -2554,7 +2554,7 @@ void RosUmdDevice::ResourceCopyRegion11_1(
         // TODO: convert path
         //
 
-       // assert(false);
+        assert(false);
     }
 
     //
