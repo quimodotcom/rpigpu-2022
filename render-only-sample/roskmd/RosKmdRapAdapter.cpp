@@ -449,7 +449,7 @@ RosKmdRapAdapter::ProcessRenderBuffer(
             //
             // Flush the VC4 GPU caches
             //
-#if 0
+#if 1
             V3D_REG_L2CACTL regL2CACTL = { 0 };
 
             regL2CACTL.L2CCLR = 1;
@@ -513,7 +513,7 @@ RosKmdRapAdapter::ProcessRenderBuffer(
             //
             // Flush the VC4 GPU caches
             //
-#if 0
+#if 1
             m_pVC4RegFile->V3D_L2CACTL = regL2CACTL.Value;
             m_pVC4RegFile->V3D_SLCACTL = regSLCACTL.Value;
 #endif

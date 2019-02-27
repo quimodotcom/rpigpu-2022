@@ -1000,7 +1000,6 @@ RosKmAdapter::QueryAdapterInfo(
 
         pDriverCaps->PresentationCaps.SupportKernelModeCommandBuffer = FALSE;
         pDriverCaps->PresentationCaps.SupportSoftwareDeviceBitmaps = TRUE;
-		pDriverCaps->PresentationCaps.DriverSupportsCddDwmInterop = FALSE;
 
         //
         // Cap used for DWM off case, screen to screen blt is slow
