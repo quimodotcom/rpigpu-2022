@@ -8,7 +8,7 @@
 
 void * RosKmdSoftAdapter::operator new(size_t size)
 {
-    return ExAllocatePoolWithTag(NonPagedPoolNx, size, 'ROSD');
+    return ExAllocatePool2(NonPagedPoolNx, size, 'ROSD');
 }
 
 void RosKmdSoftAdapter::operator delete(void * ptr)

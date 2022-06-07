@@ -301,10 +301,6 @@ private:
         UINT                       &curCommandOffset,
         D3DDDI_PATCHLOCATIONLIST * &pCurPatchLocation);
 
-    VC4TextureType MapDXGITextureFormatToVC4Type(
-        RosHwLayout layout,
-        DXGI_FORMAT format);
-
 #endif
 
 public:

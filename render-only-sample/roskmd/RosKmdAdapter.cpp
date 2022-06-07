@@ -22,7 +22,7 @@
 
 void * RosKmAdapter::operator new(size_t size)
 {
-    return ExAllocatePoolWithTag(NonPagedPoolNx, size, 'ROSD');
+    return ExAllocatePool2(NonPagedPoolNx, size, 'ROSD');
 }
 
 void RosKmAdapter::operator delete(void * ptr)
@@ -780,7 +780,7 @@ RosKmAdapter::CreateAllocation(
     {
         if (pCreateAllocation->hResource == NULL)
         {
-            pRosKmdResource = (RosKmdResource *)ExAllocatePoolWithTag(NonPagedPoolNx, sizeof(RosKmdResource), 'ROSD');
+            pRosKmdResource = (RosKmdResource *)ExAllocatePool2(NonPagedPoolNx, sizeof(RosKmdResource), 'ROSD');
             if (!pRosKmdResource)
             {
                 ROS_LOG_LOW_MEMORY(
@@ -803,7 +803,7 @@ RosKmAdapter::CreateAllocation(
     NT_ASSERT(pAllocationInfo->PrivateDriverDataSize == sizeof(RosAllocationExchange));
     RosAllocationExchange * pRosAllocation = (RosAllocationExchange *)pAllocationInfo->pPrivateDriverData;
 
-    RosKmdAllocation * pRosKmdAllocation = (RosKmdAllocation *)ExAllocatePoolWithTag(NonPagedPoolNx, sizeof(RosKmdAllocation), 'ROSD');
+    RosKmdAllocation * pRosKmdAllocation = (RosKmdAllocation *)ExAllocatePool2(NonPagedPoolNx, sizeof(RosKmdAllocation), 'ROSD');
     if (!pRosKmdAllocation)
     {
         if (pRosKmdResource != NULL) ExFreePoolWithTag(pRosKmdResource, 'ROSD');

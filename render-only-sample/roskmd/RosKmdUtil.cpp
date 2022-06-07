@@ -233,7 +233,7 @@ void* __cdecl operator new (
     ) throw ()
 {
     if (!Size) Size = 1;
-    return ExAllocatePoolWithTag(PoolType, Size, ULONG(Tag));
+    return ExAllocatePool2(PoolType, Size, ULONG(Tag));
 } // operator new ( size_t, POOL_TYPE, ROS_ALLOC_TAG )
 
 void __cdecl operator delete ( void* Ptr ) throw ()
@@ -253,7 +253,7 @@ void* __cdecl operator new[] (
     ) throw ()
 {
     if (!Size) Size = 1;
-    return ExAllocatePoolWithTag(PoolType, Size, ULONG(Tag));
+    return ExAllocatePool2(PoolType, Size, ULONG(Tag));
 } // operator new[] ( size_t, POOL_TYPE, ROS_ALLOC_TAG )
 
 void __cdecl operator delete[] ( void* Ptr ) throw ()

@@ -42,7 +42,7 @@ NTSTATUS RosKmAcpiReader::EvalAcpiMethod()
                 ExFreePool(m_pOutputBuffer);
             }
 
-            m_pOutputBuffer = (ACPI_EVAL_OUTPUT_BUFFER*)ExAllocatePoolWithTag(PagedPool, RequiredSize, 'ROSD');
+            m_pOutputBuffer = (ACPI_EVAL_OUTPUT_BUFFER*)ExAllocatePool2(PagedPool, RequiredSize, 'ROSD');
             if (NULL == m_pOutputBuffer)
             {
                 Reset();

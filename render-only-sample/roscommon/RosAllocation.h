@@ -6,7 +6,6 @@
 #include <d3d10umddi.h>
 
 #include <Vc4Hw.h>
-#include <ntassert.h>
 
 enum RosHwLayout
 {
@@ -43,13 +42,9 @@ struct RosAllocationExchange
     bool                    m_isPrimary;
     DXGI_DDI_PRIMARY_DESC   m_primaryDesc;
 
-    // HW specific information calculated based on the fields above
     RosHwLayout             m_hwLayout;
-
     UINT                    m_hwWidthPixels;
     UINT                    m_hwHeightPixels;
-    RosHwFormat             m_hwFormat;
-    UINT                    m_hwPitchBytes;
     UINT                    m_hwSizeBytes;
 };
 
@@ -69,7 +64,7 @@ Vc4FrameBufferColorFormatFromDxgiFormat (
     case DXGI_FORMAT_B8G8R8A8_UNORM:
         return VC4_NON_HDR_FRAME_BUFFER_COLOR_FORMAT::RGBA8888;
     default:
-        NT_ASSERT(false);
+        __debugbreak();
         return VC4_NON_HDR_FRAME_BUFFER_COLOR_FORMAT::RGBA8888;
     }
 }
@@ -83,7 +78,7 @@ inline VC4TileBufferPixelFormat Vc4TileBufferPixelFormatFromDxgiFormat (
     case DXGI_FORMAT_B8G8R8A8_UNORM:
         return VC4_TILE_BUFFER_PIXEL_FORMAT_RGBA8888;
     default:
-        NT_ASSERT(false);
+        __debugbreak();
         return VC4_TILE_BUFFER_PIXEL_FORMAT_RGBA8888;
     }
 }
@@ -94,7 +89,7 @@ inline VC4_MEMORY_FORMAT Vc4MemoryFormatFromRosHwLayout (RosHwLayout Layout)
     case RosHwLayout::Linear: return VC4_MEMORY_FORMAT::LINEAR;
     case RosHwLayout::Tiled: return VC4_MEMORY_FORMAT::T_FORMAT;
     default:
-        NT_ASSERT(false);
+        __debugbreak();
         return VC4_MEMORY_FORMAT::LINEAR;
     }
 }
@@ -111,7 +106,7 @@ inline VC4TextureDataType Vc4TextureTypeFromDxgiFormat (
         case DXGI_FORMAT_B8G8R8A8_UNORM:
             return VC4_TEX_RGBA32R;
         default:
-            NT_ASSERT(false);
+            __debugbreak();
             return VC4_TEX_RGBA32R;
         }
         break;
@@ -122,11 +117,11 @@ inline VC4TextureDataType Vc4TextureTypeFromDxgiFormat (
             return VC4_TEX_RGBX8888; // XXX: shouldn't this be VC4_TEX_RGBA8888?
             break;
         default:
-            NT_ASSERT(false);
+            __debugbreak();
             return VC4_TEX_RGBX8888;
         }
     default:
-        NT_ASSERT(false);
+        __debugbreak();
         return VC4_TEX_RGBA32R;
     }
 }

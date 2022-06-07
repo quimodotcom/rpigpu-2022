@@ -32,7 +32,7 @@ RosKmdRapAdapter::~RosKmdRapAdapter()
 
 void * RosKmdRapAdapter::operator new(size_t size)
 {
-    return ExAllocatePoolWithTag(NonPagedPoolNx, size, 'ROSD');
+    return ExAllocatePool2(NonPagedPoolNx, size, 'ROSD');
 }
 
 void RosKmdRapAdapter::operator delete(void * ptr)

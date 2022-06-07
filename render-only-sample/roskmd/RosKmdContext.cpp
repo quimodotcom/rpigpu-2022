@@ -137,7 +137,7 @@ RosKmContext::DdiCreateContext(
 
     RosKmContext  *pRosKmContext;
 
-    pRosKmContext = (RosKmContext *)ExAllocatePoolWithTag(NonPagedPoolNx, sizeof(RosKmContext), 'ROSD');
+    pRosKmContext = (RosKmContext *)ExAllocatePool2(NonPagedPoolNx, sizeof(RosKmContext), 'ROSD');
     if (!pRosKmContext)
     {
         return STATUS_NO_MEMORY;
